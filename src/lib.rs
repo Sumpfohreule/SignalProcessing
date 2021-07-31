@@ -23,6 +23,17 @@ impl Index<usize> for LinearSignal {
     }
 }
 
+impl std::ops::Add<LinearSignal> for LinearSignal {
+    type Output = LinearSignal;
+    fn add(self, rhs: LinearSignal) -> Self::Output {
+        let mut new_signal = Vec::new();
+        for i in 0..self.len() {
+            new_signal.push(self[i] + rhs[i]);
+        }
+        LinearSignal::new(new_signal)
+    }
+}
+
 fn impulse_decomposition(signal: LinearSignal) -> Vec<LinearSignal> {
     let mut output = Vec::new();
     for i in 0..signal.len() {
@@ -68,6 +79,14 @@ fn even_odd_decomposition(signal: LinearSignal) -> Vec<LinearSignal> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn add_same_length_signals() {
+        let sig_1 = LinearSignal::new(vec![1, 4, 8, 3]);
+        let sig_2 = LinearSignal::new(vec![2, 3, 8, -1]);
+        let output = LinearSignal::new(vec![3, 7, 16, 2]);
+        assert_eq!(sig_1 + sig_2, output);
+    }
 
     #[test]
     fn impulse_single() {
