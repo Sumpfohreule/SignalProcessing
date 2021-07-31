@@ -13,46 +13,26 @@ impl AperiodicSignal {
     fn len(&self) -> usize {
         self.values.len()
     }
-
-    fn extend(self, size: usize) -> Self {
-        let mut extended = Vec::new();
-        for i in 0..self.len() {
-            extended.push(self[i]);
-        }
-        for _ in self.len()..size {
-            extended.push(0);
-        }
-        AperiodicSignal::new(extended)
-    }
 }
 
 impl Index<usize> for AperiodicSignal {
     type Output = i32;
 
     fn index(&self, index: usize) -> &Self::Output {
-        &self.values[index]
+        if index >= self.len() {
+            &0
+        } else {
+            &self.values[index]
+        }
     }
 }
 
 impl std::ops::Add<AperiodicSignal> for AperiodicSignal {
     type Output = AperiodicSignal;
     fn add(self, rhs: AperiodicSignal) -> Self::Output {
-        let sig_1;
-        let sig_2;
-        if self.len() < rhs.len() {
-            sig_1 = self.extend(rhs.len());
-            sig_2 = rhs;
-        } else if self.len() > rhs.len() {
-            sig_2 = rhs.extend(self.len());
-            sig_1 = self;
-        } else {
-            sig_1 = self;
-            sig_2 = rhs;
-        }
-
         let mut new_signal = Vec::new();
-        for i in 0..sig_1.len() {
-            new_signal.push(sig_1[i] + sig_2[i]);
+        for i in 0..self.len() {
+            new_signal.push(self[i] + rhs[i]);
         }
         AperiodicSignal::new(new_signal)
     }
