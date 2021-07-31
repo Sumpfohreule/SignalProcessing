@@ -47,6 +47,24 @@ fn step_decomposition(signal: LinearSignal) -> Vec<LinearSignal> {
     output
 }
 
+fn even_odd_decomposition(signal: LinearSignal) -> Vec<LinearSignal> {
+    let mut even = Vec::new();
+    even.reserve_exact(signal.len() + 1);
+    even.push(signal[0]);
+    
+    let mut odd = Vec::new();
+    odd.reserve_exact(signal.len() + 1);
+    odd.push(0);
+
+    for i in 1..signal.len() {
+        let front_index = i % signal.len();
+        let back_index = (signal.len() - i) % signal.len();
+        even.push((signal[front_index] + signal[back_index]) / 2);
+        odd.push((signal[front_index] - signal[back_index]) / 2);
+    }
+    vec![LinearSignal::new(even), LinearSignal::new(odd)]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -81,5 +99,13 @@ mod tests {
             LinearSignal::new(vec![0, -2, -2]),
             LinearSignal::new(vec![0, 0, 3])];
         assert_eq!(step_decomposition(sig), result);
+    }
+
+    #[test]
+    fn even_uneven() {
+        let sig = LinearSignal::new(vec![4, 1, -3, -4, 10, 5, 7]);
+        let even = LinearSignal::new(vec![4, 4, 1, 3, 3, 1, 4]);
+        let odd = LinearSignal::new(vec![0, -3, -4, -7, 7, 4, 3]);
+        assert_eq!(even_odd_decomposition(sig), vec![even, odd]);
     }
 }
