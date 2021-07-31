@@ -13,6 +13,17 @@ impl LinearSignal {
     fn len(&self) -> usize {
         self.values.len()
     }
+
+    fn extend(self, size: usize) -> Self {
+        let mut extended = Vec::new();
+        for i in 0..self.len() {
+            extended.push(self[i]);
+        }
+        for _ in self.len()..size {
+            extended.push(0);
+        }
+        LinearSignal::new(extended)
+    }
 }
 
 impl Index<usize> for LinearSignal {
@@ -26,9 +37,23 @@ impl Index<usize> for LinearSignal {
 impl std::ops::Add<LinearSignal> for LinearSignal {
     type Output = LinearSignal;
     fn add(self, rhs: LinearSignal) -> Self::Output {
+        let sig_1;
+        let sig_2;
+        if self.len() < rhs.len() {
+            sig_1 = self.extend(rhs.len());
+            sig_2 = rhs;
+        } else if self.len() > rhs.len() {
+            sig_2 = rhs.extend(self.len());
+            sig_1 = self;
+        } else {
+            sig_1 = self;
+            sig_2 = rhs;
+        }
+
+
         let mut new_signal = Vec::new();
-        for i in 0..self.len() {
-            new_signal.push(self[i] + rhs[i]);
+        for i in 0..sig_1.len() {
+            new_signal.push(sig_1[i] + sig_2[i]);
         }
         LinearSignal::new(new_signal)
     }
@@ -85,6 +110,14 @@ mod tests {
         let sig_1 = LinearSignal::new(vec![1, 4, 8, 3]);
         let sig_2 = LinearSignal::new(vec![2, 3, 8, -1]);
         let output = LinearSignal::new(vec![3, 7, 16, 2]);
+        assert_eq!(sig_1 + sig_2, output);
+    }
+
+    #[test]
+    fn add_signals_rhs_shorter() {
+        let sig_1 = LinearSignal::new(vec![1, 4, 8, 3]);
+        let sig_2 = LinearSignal::new(vec![2, 3]);
+        let output = LinearSignal::new(vec![3, 7, 8, 3]);
         assert_eq!(sig_1 + sig_2, output);
     }
 
