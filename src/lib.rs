@@ -1,11 +1,16 @@
 use std::ops::Index;
 
+trait Signal: Index<usize, Output=i32> {
+    fn new(values: Vec<i32>) -> Self;
+    fn len(&self) -> usize;
+}
+
 #[derive(Debug, PartialEq)]
 struct AperiodicSignal {
     values: Vec<i32>,
 }
 
-impl AperiodicSignal {
+impl Signal for AperiodicSignal {
     fn new(values: Vec<i32>) -> Self {
         Self { values }
     }
@@ -38,31 +43,31 @@ impl std::ops::Add<AperiodicSignal> for AperiodicSignal {
     }
 }
 
-fn impulse_decomposition(signal: AperiodicSignal) -> Vec<AperiodicSignal> {
+fn impulse_decomposition<S: Signal>(signal: S) -> Vec<S> {
     let mut output = Vec::new();
     for i in 0..signal.len() {
         let mut new_values = vec![0; signal.len()];
         new_values[i] = signal[i];
-        output.push(AperiodicSignal::new(new_values));
+        output.push(S::new(new_values));
     }
     output
 }
 
-fn step_decomposition(signal: AperiodicSignal) -> Vec<AperiodicSignal> {
+fn step_decomposition<S: Signal>(signal: S) -> Vec<S> {
     let mut output = Vec::new();
-    output.push(AperiodicSignal::new(vec![0; signal.len()]));
+    output.push(S::new(vec![0; signal.len()]));
     for i in 1..signal.len() {
         let diff = signal[i] - signal[i-1];
         let mut new_values = vec![0; signal.len()];
         for j in i..signal.len() {
             new_values[j] = diff;
         }
-        output.push(AperiodicSignal::new(new_values));
+        output.push(S::new(new_values));
     }
     output
 }
 
-fn even_odd_decomposition(signal: AperiodicSignal) -> Vec<AperiodicSignal> {
+fn even_odd_decomposition<S: Signal>(signal: S) -> Vec<S> {
     let mut even = Vec::new();
     even.reserve_exact(signal.len() + 1);
     even.push(signal[0]);
@@ -77,7 +82,7 @@ fn even_odd_decomposition(signal: AperiodicSignal) -> Vec<AperiodicSignal> {
         even.push((signal[front_index] + signal[back_index]) / 2);
         odd.push((signal[front_index] - signal[back_index]) / 2);
     }
-    vec![AperiodicSignal::new(even), AperiodicSignal::new(odd)]
+    vec![S::new(even), S::new(odd)]
 }
 
 #[cfg(test)]
