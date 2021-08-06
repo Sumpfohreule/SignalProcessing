@@ -1,12 +1,13 @@
 mod signal;
 use signal::Signal;
+use signal::AperiodicSignal;
 
 use std::f64::consts::PI;
 
 pub fn impulse_decomposition<S: Signal>(signal: S) -> Vec<S> {
     let mut output = Vec::new();
     for i in 0..signal.len() {
-        let mut new_values = vec![0; signal.len()];
+        let mut new_values = vec![0.0; signal.len()];
         new_values[i] = signal[i];
         output.push(S::new(new_values));
     }
@@ -14,10 +15,10 @@ pub fn impulse_decomposition<S: Signal>(signal: S) -> Vec<S> {
 }
 
 pub fn step_decomposition<S: Signal>(signal: S) -> Vec<S> {
-    let mut output = vec![S::new(vec![0; signal.len()])];
+    let mut output = vec![S::new(vec![0.0; signal.len()])];
     for i in 1..signal.len() {
         let diff = signal[i] - signal[i-1];
-        let mut new_values = vec![0; signal.len()];
+        let mut new_values = vec![0.0; signal.len()];
         for item in new_values.iter_mut().take(signal.len()).skip(i) {
             *item = diff;
         }
@@ -51,41 +52,41 @@ mod tests {
 
     #[test]
     fn impulse_single() {
-        let sig = AperiodicSignal::new(vec![4]);
-        assert_eq!(impulse_decomposition(sig), vec![AperiodicSignal::new(vec![4])]);
+        let sig = AperiodicSignal::new(vec![4.0]);
+        assert_eq!(impulse_decomposition(sig), vec![AperiodicSignal::new(vec![4.0])]);
     }
 
     #[test]
     fn impulse_multiple() {
-        let sig = AperiodicSignal::new(vec![4, 2, 5]);
+        let sig = AperiodicSignal::new(vec![4.0, 2.0, 5.0]);
         let result = vec![
-            AperiodicSignal::new(vec![4, 0, 0]),
-            AperiodicSignal::new(vec![0, 2, 0]),
-            AperiodicSignal::new(vec![0, 0, 5])];
+            AperiodicSignal::new(vec![4.0, 0.0, 0.0]),
+            AperiodicSignal::new(vec![0.0, 2.0, 0.0]),
+            AperiodicSignal::new(vec![0.0, 0.0, 5.0])];
         assert_eq!(impulse_decomposition(sig), result);
     }
 
     #[test]
     fn step_single() {
-        let sig = AperiodicSignal::new(vec![10]);
-        assert_eq!(step_decomposition(sig), vec![AperiodicSignal::new(vec![0])]);
+        let sig = AperiodicSignal::new(vec![10.0]);
+        assert_eq!(step_decomposition(sig), vec![AperiodicSignal::new(vec![0.0])]);
     }
 
     #[test]
     fn step_multiple() {
-        let sig = AperiodicSignal::new(vec![4, 2, 5]);
+        let sig = AperiodicSignal::new(vec![4.0, 2.0, 5.0]);
         let result = vec![
-            AperiodicSignal::new(vec![0, 0, 0]),
-            AperiodicSignal::new(vec![0, -2, -2]),
-            AperiodicSignal::new(vec![0, 0, 3])];
+            AperiodicSignal::new(vec![0.0, 0.0, 0.0]),
+            AperiodicSignal::new(vec![0.0, -2.0, -2.0]),
+            AperiodicSignal::new(vec![0.0, 0.0, 3.0])];
         assert_eq!(step_decomposition(sig), result);
     }
 
     #[test]
     fn even_uneven() {
-        let sig = AperiodicSignal::new(vec![4, 1, -3, -4, 10, 5, 7]);
-        let even = AperiodicSignal::new(vec![4, 4, 1, 3, 3, 1, 4]);
-        let odd = AperiodicSignal::new(vec![0, -3, -4, -7, 7, 4, 3]);
+        let sig = AperiodicSignal::new(vec![4.0, 1.0, -3.0, -4.0, 10.0, 5.0, 7.0]);
+        let even = AperiodicSignal::new(vec![4.0, 4.0, 1.0, 3.0, 3.0, 1.0, 4.0]);
+        let odd = AperiodicSignal::new(vec![0.0, -3.0, -4.0, -7.0, 7.0, 4.0, 3.0]);
         assert_eq!(even_odd_decomposition(sig), vec![even, odd]);
     }
 

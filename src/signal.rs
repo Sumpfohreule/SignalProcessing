@@ -1,14 +1,14 @@
 use std::ops::Index;
 
-pub trait Signal: Index<i32, Output=i32> + Index<usize, Output=i32> + Sized + Clone {
-    fn new(values: Vec<i32>) -> Self;
+pub trait Signal: Index<i32, Output=f64> + Index<usize, Output=f64> + Sized + Clone {
+    fn new(values: Vec<f64>) -> Self;
     fn len(&self) -> usize;
     fn fold(&self, rhs: &Self) -> Self {
         let n = self.len();
         let m = rhs.len();
         let mut output = Vec::new();
         for i in 0..(n + m - 1) as i32 {
-            let mut sum = 0;
+            let mut sum = 0.0;
             for j in 0..(m) as i32 {
                 sum += rhs[j] * self[i - j];
             }
@@ -20,11 +20,11 @@ pub trait Signal: Index<i32, Output=i32> + Index<usize, Output=i32> + Sized + Cl
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct AperiodicSignal {
-    values: Vec<i32>,
+    values: Vec<f64>,
 }
 
 impl Signal for AperiodicSignal {
-    fn new(values: Vec<i32>) -> Self {
+    fn new(values: Vec<f64>) -> Self {
         Self { values }
     }
 
@@ -34,11 +34,11 @@ impl Signal for AperiodicSignal {
 }
 
 impl Index<usize> for AperiodicSignal {
-    type Output = i32;
+    type Output = f64;
 
     fn index(&self, index: usize) -> &Self::Output {
         if index >= self.len() {
-            &0
+            &0.0
         } else {
             &self.values[index]
         }
@@ -46,11 +46,11 @@ impl Index<usize> for AperiodicSignal {
 }
 
 impl Index<i32> for AperiodicSignal {
-    type Output = i32;
+    type Output = f64;
 
     fn index(&self, index: i32) -> &Self::Output {
         if index < 0 || index >= self.len() as i32 {
-            &0
+            &0.0
         } else {
             &self.values[index as usize]
         }
@@ -74,38 +74,38 @@ mod tests {
 
     #[test]
     fn add_same_length_signals() {
-        let sig_1 = AperiodicSignal::new(vec![1, 4, 8, 3]);
-        let sig_2 = AperiodicSignal::new(vec![2, 3, 8, -1]);
-        let output = AperiodicSignal::new(vec![3, 7, 16, 2]);
+        let sig_1 = AperiodicSignal::new(vec![1.0, 4.0, 8.0, 3.0]);
+        let sig_2 = AperiodicSignal::new(vec![2.0, 3.0, 8.0, -1.0]);
+        let output = AperiodicSignal::new(vec![3.0, 7.0, 16.0, 2.0]);
         assert_eq!(sig_1 + sig_2, output);
     }
 
     #[test]
     fn add_signals_rhs_shorter() {
-        let sig_1 = AperiodicSignal::new(vec![1, 4, 8, 3]);
-        let sig_2 = AperiodicSignal::new(vec![2, 3]);
-        let output = AperiodicSignal::new(vec![3, 7, 8, 3]);
+        let sig_1 = AperiodicSignal::new(vec![1.0, 4.0, 8.0, 3.0]);
+        let sig_2 = AperiodicSignal::new(vec![2.0, 3.0]);
+        let output = AperiodicSignal::new(vec![3.0, 7.0, 8.0, 3.0]);
         assert_eq!(sig_1 + sig_2, output);
     }
 
     #[test]
     fn fold_identity() {
-        let signal = AperiodicSignal::new(vec![1, 2, 3, 4, 5]);
-        let kernel = AperiodicSignal::new(vec![1]);
+        let signal = AperiodicSignal::new(vec![1.0, 2.0, 3.0, 4.0, 5.0]);
+        let kernel = AperiodicSignal::new(vec![1.0]);
         assert_eq!(signal.fold(&kernel), signal);
     }
 
     #[test]
     fn fold_delay() {
-        let signal = AperiodicSignal::new(vec![1, 2, 3, 4, 5]);
-        let kernel = AperiodicSignal::new(vec![0, 0, 1]);
-        assert_eq!(signal.fold(&kernel), AperiodicSignal::new(vec![0, 0, 1, 2, 3, 4, 5]));
+        let signal = AperiodicSignal::new(vec![1.0, 2.0, 3.0, 4.0, 5.0]);
+        let kernel = AperiodicSignal::new(vec![0.0, 0.0, 1.0]);
+        assert_eq!(signal.fold(&kernel), AperiodicSignal::new(vec![0.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0]));
     }
 
     #[test]
     fn fold_amplify() {
-        let signal = AperiodicSignal::new(vec![1, 2, -3, 4, 5]);
-        let kernel = AperiodicSignal::new(vec![2]);
-        assert_eq!(signal.fold(&kernel), AperiodicSignal::new(vec![2, 4, -6, 8, 10]));
+        let signal = AperiodicSignal::new(vec![1.0, 2.0, -3.0, 4.0, 5.0]);
+        let kernel = AperiodicSignal::new(vec![2.0]);
+        assert_eq!(signal.fold(&kernel), AperiodicSignal::new(vec![2.0, 4.0, -6.0, 8.0, 10.0]));
     }
 }
