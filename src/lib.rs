@@ -14,13 +14,12 @@ fn impulse_decomposition<S: Signal>(signal: S) -> Vec<S> {
 }
 
 fn step_decomposition<S: Signal>(signal: S) -> Vec<S> {
-    let mut output = Vec::new();
-    output.push(S::new(vec![0; signal.len()]));
+    let mut output = vec![S::new(vec![0; signal.len()])];
     for i in 1..signal.len() {
         let diff = signal[i] - signal[i-1];
         let mut new_values = vec![0; signal.len()];
-        for j in i..signal.len() {
-            new_values[j] = diff;
+        for item in new_values.iter_mut().take(signal.len()).skip(i) {
+            *item = diff;
         }
         output.push(S::new(new_values));
     }
