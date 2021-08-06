@@ -3,7 +3,7 @@ use signal::Signal;
 
 use std::f64::consts::PI;
 
-fn impulse_decomposition<S: Signal>(signal: S) -> Vec<S> {
+pub fn impulse_decomposition<S: Signal>(signal: S) -> Vec<S> {
     let mut output = Vec::new();
     for i in 0..signal.len() {
         let mut new_values = vec![0; signal.len()];
@@ -13,7 +13,7 @@ fn impulse_decomposition<S: Signal>(signal: S) -> Vec<S> {
     output
 }
 
-fn step_decomposition<S: Signal>(signal: S) -> Vec<S> {
+pub fn step_decomposition<S: Signal>(signal: S) -> Vec<S> {
     let mut output = vec![S::new(vec![0; signal.len()])];
     for i in 1..signal.len() {
         let diff = signal[i] - signal[i-1];
@@ -26,7 +26,7 @@ fn step_decomposition<S: Signal>(signal: S) -> Vec<S> {
     output
 }
 
-fn even_odd_decomposition<S: Signal>(signal: S) -> Vec<S> {
+pub fn even_odd_decomposition<S: Signal>(signal: S) -> Vec<S> {
     let mut even = Vec::new();
     even.reserve_exact(signal.len() + 1);
     even.push(signal[0]);
