@@ -16,6 +16,20 @@ pub trait Signal: Index<i32, Output=f64> + Index<usize, Output=f64> + Sized + Cl
         }
         Self::new(output)
     }
+
+    fn correlate(&self, rhs: &Self) -> Self {
+        let n = self.len();
+        let m = rhs.len();
+        let mut output = Vec::new();
+        for i in 0..(n + m - 1) as i32 {
+            let mut sum = 0.0;
+            for j in 0..(m) as i32 {
+                sum += rhs[j] * self[i + j];
+            }
+            output.push(sum);
+        }
+        Self::new(output)
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -107,5 +121,12 @@ mod tests {
         let signal = AperiodicSignal::new(vec![1.0, 2.0, -3.0, 4.0, 5.0]);
         let kernel = AperiodicSignal::new(vec![2.0]);
         assert_eq!(signal.fold(&kernel), AperiodicSignal::new(vec![2.0, 4.0, -6.0, 8.0, 10.0]));
+    }
+
+    #[test]
+    fn correlate_identical() {
+        let signal = AperiodicSignal::new(vec![3.0, 2.0, -1.0, 4.0, -3.0, 6.0, 2.0, -1.0]);
+        let kernel = AperiodicSignal::new(vec![4.0, -3.0, 6.0]);
+        assert_eq!(signal.correlate(&kernel), AperiodicSignal::new(vec![0.0, 35.0, -34.0, 61.0, -18.0, 12.0, 11.0, -4.0, 0.0, 0.0]));
     }
 }
